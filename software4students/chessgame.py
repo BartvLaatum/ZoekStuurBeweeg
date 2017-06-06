@@ -178,11 +178,11 @@ class ChessBoard:
     def is_legal_move(self, move):
         start = to_coordinate(move[:2])
         end = to_coordinate(move[2:])
-        if outside_board(start, end):
+        if self.outside_board(start, end):
             return False
-        if spot_occupied(move):
+        if self.spot_occupied(start, end):
             return False
-        if piece_restriction(move):
+        if self.piece_restriction(start, end):
             return False
         return True
 
