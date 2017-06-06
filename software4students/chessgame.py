@@ -176,7 +176,7 @@ class ChessBoard:
                     all_moves = self.all_moves((x,y))
                     for move in all_moves:
                         if self.is_legal_move(move):
-                            move_list.append(to_notation(move))
+                            move_list.append(move)
         return move_list
 
 
@@ -186,8 +186,7 @@ class ChessBoard:
         moves = []
         for i in range(8):
             for j in range(8):
-                move = to_move(coordinates) + to_move(i, j)
-                moves.append(move)
+                moves.append(to_move(coordinates,(i,j)))
         return moves
 
     # This function should return, given the move specified (in the format
@@ -357,6 +356,7 @@ class ChessGame:
 
     def make_human_move(self):
         # Endlessly request input until the right input is specified
+        print(self.chessboard.legal_moves())
         while True:
             if sys.version_info[:2] <= (2, 7):
                 move = raw_input("Indicate your move (or q to stop): ")
