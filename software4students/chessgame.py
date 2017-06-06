@@ -169,12 +169,23 @@ class ChessBoard:
     # TODO: write an implementation for this function
     def legal_moves(self):
         move_list = []
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_boardpiece((x, y))
         pass
+
+    # Generates all possible moves from a start coordinate, without taking
+    # the rules of the game into account
+    def all_moves(self, coordinates):
+        moves = []
+        for i in range(8):
+            for j in range(8):
+                move = to_move(coordinates) + to_move(i, j)
+                moves.append(move)
+        return moves
 
     # This function should return, given the move specified (in the format
     # 'd2d3') whether this move is legal
-    # TODO: write an implementation for this function, implement it in terms
-    # of legal_moves()
     def is_legal_move(self, move):
         start = to_coordinate(move[:2])
         end = to_coordinate(move[2:])
@@ -194,7 +205,7 @@ class ChessBoard:
         else:
             return True
 
-    # Checks if the proposed move starts and stays inside the chess board
+    # Checks if the proposed move starts, and stays inside the chess board.
     def outside_board(self, start, end):
         if 0 > start[0] > 7 or 0 > start[1] > 7:
             return True
@@ -204,13 +215,18 @@ class ChessBoard:
             return True
         return False
 
+    # Checks if the proposed path of movement lies within the options of the
+    # piece.
     def piece_restriction(self, start, end):
         piece = self.get_boardpiece(start)
+
+        if self.turn != piece.side:
+            return True
 
         if None == piece:
             return True
 
-        elif Material.Pawn == piece.Material:
+        elif Material.Pawn == piece.material:
             if end[1] - start[1] != 1:
                 return True
 
@@ -220,7 +236,7 @@ class ChessBoard:
                 else:
                     return True
 
-        elif Material.Rook == piece.Material:
+        elif Material.Rook == piece.material:
             if start[0] - end[0] != 0:
                 if start[1] - end[1] != 0:
                     return True
