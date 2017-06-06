@@ -180,6 +180,16 @@ class ChessBoard:
         return move_list
 
 
+    # Generates all possible moves from a start coordinate, without taking
+    # the rules of the game into account
+    def all_moves(self, coordinates):
+        moves = []
+        for i in range(8):
+            for j in range(8):
+                move = to_move(coordinates) + to_move(i, j)
+                moves.append(move)
+        return moves
+
     # This function should return, given the move specified (in the format
     # 'd2d3') whether this move is legal
     def is_legal_move(self, move):
@@ -203,7 +213,7 @@ class ChessBoard:
         else:
             return True
 
-    # Checks if the proposed move starts and stays inside the chess board
+    # Checks if the proposed move starts, and stays inside the chess board.
     def outside_board(self, start, end):
         if 0 > start[0] > 7 or 0 > start[1] > 7:
             return True
@@ -213,6 +223,8 @@ class ChessBoard:
             return True
         return False
 
+    # Checks if the proposed path of movement lies within the options of the
+    # piece.
     def piece_restriction(self, start, end):
         piece = self.get_boardpiece(start)
 
