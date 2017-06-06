@@ -168,6 +168,7 @@ class ChessBoard:
     # [c2c3, d4e5, f4f8]
     # TODO: write an implementation for this function
     def legal_moves(self):
+        move_list = []
         pass
 
     # This function should return, given the move specified (in the format
@@ -175,8 +176,20 @@ class ChessBoard:
     # TODO: write an implementation for this function, implement it in terms
     # of legal_moves()
     def is_legal_move(self, move):
+        start_pos = to_coordinate(move[0:2])
+        end_pos = to_coordinate(move[2:4])
+        if spot_occupied(start_pos, end_pos):
+            return False
+
         return True
 
+    def spot_occupied(self, start_pos, end_pos):
+        piece = self.get_boardpiece(start_pos)
+        piece_end = self.get_boardpiece(end_pos)
+        if piece_end == None or piece_end.side != piece.side:
+            return False
+        else:
+            return True
 
 # This static class is responsible for providing functions that can calculate
 # the optimal move using minimax
@@ -300,4 +313,3 @@ class ChessGame:
 
 chess_game = ChessGame(Side.White)
 chess_game.main()
-
