@@ -169,12 +169,19 @@ class ChessBoard:
     # TODO: write an implementation for this function
     def legal_moves(self):
         move_list = []
-        pass
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_boardpiece((x,y))
+                if piece != None and piece.side == self.turn:
+                    all_moves = self.all_moves((x,y))
+                    for move in all_moves:
+                        if self.is_legal_move(move):
+                            move_list.append(to_notation(move))
+        return move_list
+
 
     # This function should return, given the move specified (in the format
     # 'd2d3') whether this move is legal
-    # TODO: write an implementation for this function, implement it in terms
-    # of legal_moves()
     def is_legal_move(self, move):
         start = to_coordinate(move[:2])
         end = to_coordinate(move[2:])
@@ -186,9 +193,11 @@ class ChessBoard:
             return False
         return True
 
+    # Checks whether a spot is occupied by teammate, by oppenent or a free spot
     def spot_occupied(self, start_pos, end_pos):
         piece = self.get_boardpiece(start_pos)
         piece_end = self.get_boardpiece(end_pos)
+
         if piece_end == None or piece_end.side != piece.side:
             return False
         else:
@@ -207,10 +216,13 @@ class ChessBoard:
     def piece_restriction(self, start, end):
         piece = self.get_boardpiece(start)
 
+        if self.turn != piece.side:
+            return True
+
         if None == piece:
             return True
 
-        elif Material.Pawn == piece.Material:
+        elif Material.Pawn == piece.material:
             if end[1] - start[1] != 1:
                 return True
 
@@ -220,7 +232,7 @@ class ChessBoard:
                 else:
                     return True
 
-        elif Material.Rook == piece.Material:
+        elif Material.Rook == piece.material:
             if start[0] - end[0] != 0:
                 if start[1] - end[1] != 0:
                     return True
