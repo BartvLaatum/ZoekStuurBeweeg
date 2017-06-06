@@ -359,3 +359,4 @@ class ChessGame:
 
 chess_game = ChessGame(Side.White)
 chess_game.main()
+
