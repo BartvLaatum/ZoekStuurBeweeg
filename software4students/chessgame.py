@@ -185,7 +185,47 @@ class ChessBoard:
             return False
         return True
 
+    # Checks if the proposed move starts and stays inside the chess board
+    def outside_board(self, start, end):
+        if 0 > start[0] > 7 or 0 > start[1] > 7:
+            return True
+        elif 0 > end[0] > 7 or 0 > end[1] > 7:
+            return True
+        elif end == start:
+            return True
+        return False
 
+    def piece_restriction(self, start, end):
+        piece = self.get_boardpiece(start)
+
+        if None == piece:
+            return True
+
+        elif Material.Pawn == piece.Material:
+            if end[1] - start[1] != 1:
+                return True
+
+            if start[0] - end[0] != 0:
+                if self.get_boardpiece(end):
+                    return False
+                else:
+                    return True
+
+        elif Material.Rook == piece.Material:
+            if start[0] - end[0] != 0:
+                if start[1] - end[1] != 0:
+                    return True
+            elif start[1] - end[1] != 0:
+                if start[0] - end[0]:
+                    return True
+            return False
+
+        else:
+            if abs(start[0] - end[0]) > 1:
+                return True
+            if abs(start[1] - end[1]) > 1:
+                return True
+            return False
 
 
 # This static class is responsible for providing functions that can calculate
@@ -308,6 +348,6 @@ class ChessGame:
             print("Black wins!")
             sys.exit(0)
 
+print(to_coordinate("b1"))
 chess_game = ChessGame(Side.White)
 chess_game.main()
-
