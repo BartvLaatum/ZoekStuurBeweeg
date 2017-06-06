@@ -175,7 +175,17 @@ class ChessBoard:
     # TODO: write an implementation for this function, implement it in terms
     # of legal_moves()
     def is_legal_move(self, move):
+        start = to_coordinate(move[:2])
+        end = to_coordinate(move[2:])
+        if outside_board(start, end):
+            return False
+        if spot_occupied(move):
+            return False
+        if piece_restriction(move):
+            return False
         return True
+
+
 
 
 # This static class is responsible for providing functions that can calculate
