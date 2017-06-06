@@ -176,11 +176,14 @@ class ChessBoard:
     # TODO: write an implementation for this function, implement it in terms
     # of legal_moves()
     def is_legal_move(self, move):
-        start_pos = to_coordinate(move[0:2])
-        end_pos = to_coordinate(move[2:4])
-        if spot_occupied(start_pos, end_pos):
+        start = to_coordinate(move[:2])
+        end = to_coordinate(move[2:])
+        if outside_board(start, end):
             return False
-
+        if spot_occupied(move):
+            return False
+        if piece_restriction(move):
+            return False
         return True
 
     def spot_occupied(self, start_pos, end_pos):
@@ -190,6 +193,49 @@ class ChessBoard:
             return False
         else:
             return True
+
+    # Checks if the proposed move starts and stays inside the chess board
+    def outside_board(self, start, end):
+        if 0 > start[0] > 7 or 0 > start[1] > 7:
+            return True
+        elif 0 > end[0] > 7 or 0 > end[1] > 7:
+            return True
+        elif end == start:
+            return True
+        return False
+
+    def piece_restriction(self, start, end):
+        piece = self.get_boardpiece(start)
+
+        if None == piece:
+            return True
+
+        elif Material.Pawn == piece.Material:
+            if end[1] - start[1] != 1:
+                return True
+
+            if start[0] - end[0] != 0:
+                if self.get_boardpiece(end):
+                    return False
+                else:
+                    return True
+
+        elif Material.Rook == piece.Material:
+            if start[0] - end[0] != 0:
+                if start[1] - end[1] != 0:
+                    return True
+            elif start[1] - end[1] != 0:
+                if start[0] - end[0]:
+                    return True
+            return False
+
+        else:
+            if abs(start[0] - end[0]) > 1:
+                return True
+            if abs(start[1] - end[1]) > 1:
+                return True
+            return False
+
 
 # This static class is responsible for providing functions that can calculate
 # the optimal move using minimax
