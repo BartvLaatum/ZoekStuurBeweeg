@@ -1,6 +1,7 @@
 from __future__ import print_function
 from copy import deepcopy
 import sys
+import numpy as np
 
 ## Helper functions
 
@@ -283,20 +284,53 @@ class ChessComputer:
     # the score and the move that should be executed
     # NOTE: use ChessComputer.evaluate_board() to calculate the score
     # of a specific board configuration after the max depth is reached
-    # TODO: write an implementation for this function
     @staticmethod
     def minimax(chessboard, depth):
-        player = chessboard.turn
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        best_move = possible_moves[0]
+        best_score = 0
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            score = ChessComputer.min_value(new_board, depth)
+            if score > best_score:
+                best_move = move
+                best_score = score
+        return best_score, best_move
 
-
-
-        return (0, "no implementation written")
+    @staticmethod
+    def min_value(chessboard, depth):
+        depth -= 1
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        if depth == 1:
+            scores = ChessComputer.scores(chessboard, possible_moves, depth)
+            return min(scores)
+        best = 9999999
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            value = ChessComputer.max_value(new_board, depth)
+            if value < best:
+                best = value
+        return best
 
     @staticmethod
     def max_value(chessboard, depth):
+        depth -= 1
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
         possible_moves = ChessBoard.legal_moves(chessboard)
-        if depth == 0:
-            return
+        if depth == 1:
+            scores = ChessComputer.scores(chessboard, possible_moves, depth)
+            return min(scores)
+        best = -9999999
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            value = ChessComputer.min_value(new_board, depth)
+            if value > best:
+                best = value
+        return best
+
 
     @staticmethod
     def scores(chessboard, possible_moves, depth):
@@ -317,6 +351,7 @@ class ChessComputer:
     # of a specific board configuration after the max depth is reached
     @staticmethod
     def alphabeta(chessboard, depth, alpha, beta):
+        return ChessComputer.minimax(chessboard, depth)
         return (0, "no implementation written")
 
     # Calculates the score of a given board configuration based on the 
