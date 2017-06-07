@@ -1,6 +1,7 @@
 from __future__ import print_function
 from copy import deepcopy
 import sys
+import numpy as np
 
 ## Helper functions
 
@@ -283,20 +284,44 @@ class ChessComputer:
     # the score and the move that should be executed
     # NOTE: use ChessComputer.evaluate_board() to calculate the score
     # of a specific board configuration after the max depth is reached
-    # TODO: write an implementation for this function
     @staticmethod
     def minimax(chessboard, depth):
         player = chessboard.turn
-
-
-
-        return (0, "no implementation written")
+        move, action = np.argmax(ChessBoard.legal_moves(chessboard),
+                                    lambda chessboard: ChessComputer.min_value(chessboard))
+        return (action, move)
 
     @staticmethod
     def max_value(chessboard, depth):
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
+        depth -= 1
+        value = -999999
         possible_moves = ChessBoard.legal_moves(chessboard)
+        best_move = possible_moves[0]
         if depth == 0:
-            return
+            for move in possible_moves:
+                new_board = ChessBoard.make_move(chessboard, move)
+                new_value = max(value, ChessComputer.min_value(new_board))
+
+        return new_value
+
+    @staticmethod
+    def min_value(chessboard, depth):
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
+        depth -= 1
+        value = 999999
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        best_move = [0]
+        if depth == 0:
+            for move in possible_moves:
+                new_board = ChessBoard.make_move(chessboard, move)
+                new_value = min(value, ChessComputer.max_value(new_board))
+
+        return new_value
+
+
 
     @staticmethod
     def scores(chessboard, possible_moves, depth):
@@ -318,6 +343,8 @@ class ChessComputer:
     @staticmethod
     def alphabeta(chessboard, depth, alpha, beta):
         return (0, "no implementation written")
+
+
 
     # Calculates the score of a given board configuration based on the 
     # material left on the board. Returns a score number, in which positive
@@ -438,4 +465,5 @@ class ChessGame:
 
 chess_game = ChessGame(Side.White)
 chess_game.main()
+
 
