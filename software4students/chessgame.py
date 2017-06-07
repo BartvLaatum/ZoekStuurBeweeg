@@ -286,7 +286,28 @@ class ChessComputer:
     # TODO: write an implementation for this function
     @staticmethod
     def minimax(chessboard, depth):
+        player = chessboard.turn
+
+
+
         return (0, "no implementation written")
+
+    @staticmethod
+    def max_value(chessboard, depth):
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        if depth == 0:
+            return
+
+    @staticmethod
+    def scores(chessboard, possible_moves, depth):
+        scores = []
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            scores.append(ChessComputer.evaluate_board(new_board, depth))
+        return scores
+
+
+
 
     # This function uses alphabeta to calculate the next move. Given the
     # chessboard and max depth, this function should return a tuple of the
@@ -303,9 +324,44 @@ class ChessComputer:
     # means white is better off, while negative means black is better of
     @staticmethod
     def evaluate_board(chessboard, depth_left):
-        return 0
+        white_score = ChessComputer.count_pieces(chessboard, Side.White)
+        black_score = ChessComputer.count_pieces(chessboard, Side.Black)
+        weight = ChessComputer.get_weight(depth_left)
+        score =  weight * (white_score - black_score)
+        return score
 
-# This class is responsible for starting the chess game, playing and user 
+    # Calculate weight
+    @staticmethod
+    def get_weight(depth_left):
+        return depth_left
+
+    # Counts the pieces of a specified color, assigns a score to each piece,
+    # and returns the score
+    @staticmethod
+    def count_pieces(chessboard, side):
+        score = 0
+        for i in range(8):
+            for j in range(8):
+                piece = ChessBoard.get_boardpiece(chessboard, (i,j))
+                if piece != None and piece.side == side:
+                    score += ChessComputer.get_score(piece.material)
+        return score
+
+    # Get the score of a specific material
+    @staticmethod
+    def get_score(material):
+        score = 0
+        if material == Material.Pawn:
+            score += 1
+        elif material == Material.Rook:
+            score += 5
+        else:
+            score += 50
+        return score
+
+
+
+# This class is responsible for starting the chess game, playing and user
 # feedback
 class ChessGame:
     def __init__(self, turn):
@@ -319,7 +375,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "board.chb"
+            filename = "mate_in_one1.chb"
 
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
