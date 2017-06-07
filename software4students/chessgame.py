@@ -301,7 +301,10 @@ class ChessComputer:
     def minimax(chessboard, depth):
         possible_moves = ChessBoard.legal_moves(chessboard)
         best_move = possible_moves[0]
-        best_score = 0
+        if chessboard.turn == Side.Black:
+            best_score = 9999999
+        else:
+            best_score = -9999999
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
             if chessboard.turn == Side.Black:
@@ -373,9 +376,7 @@ class ChessComputer:
         return ChessComputer.minimax(chessboard, depth)
         return (0, "no implementation written")
 
-
-
-    # Calculates the score of a given board configuration based on the
+    # Calculates the score of a given board configuration based on the 
     # material left on the board. Returns a score number, in which positive
     # means white is better off, while negative means black is better of
     @staticmethod
@@ -412,7 +413,7 @@ class ChessComputer:
         elif material == Material.Rook:
             score += 5
         else:
-            score += 50
+            score += 100
         return score
 
 
@@ -432,7 +433,6 @@ class ChessGame:
             filename = sys.argv[1]
         else:
             filename = "mate_in_one2.chb"
-
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
