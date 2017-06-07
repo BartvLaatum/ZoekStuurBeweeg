@@ -291,10 +291,16 @@ class ChessComputer:
         best_score = 0
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
-            score = ChessComputer.min_value(new_board, depth)
-            if score > best_score:
-                best_move = move
-                best_score = score
+            if chessboard.turn == Side.Black:
+                score = ChessComputer.max_value(new_board, depth)
+                if score < best_score:
+                    best_move = move
+                    best_score = score
+            else:
+                score = ChessComputer.min_value(new_board, depth)
+                if score > best_score:
+                    best_move = move
+                    best_score = score
         return best_score, best_move
 
     @staticmethod
@@ -410,7 +416,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "mate_in_one1.chb"
+            filename = "board.chb"
 
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
