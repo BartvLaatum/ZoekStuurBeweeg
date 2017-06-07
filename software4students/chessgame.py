@@ -166,7 +166,6 @@ class ChessBoard:
     # which players turn it is, all the moves possible for that player
     # It should return these moves as a list of move strings, e.g.
     # [c2c3, d4e5, f4f8]
-    # TODO: write an implementation for this function
     def legal_moves(self):
         move_list = []
         for x in range(8):
@@ -304,7 +303,32 @@ class ChessComputer:
     # means white is better off, while negative means black is better of
     @staticmethod
     def evaluate_board(chessboard, depth_left):
-        return 0
+        white_score = ChessComputer.count_pieces(chessboard, Side.White)
+        black_score = ChessComputer.count_pieces(chessboard, Side.Black)
+        return white_score - black_score
+
+    @staticmethod
+    def count_pieces(chessboard, side):
+        score = 0
+        for i in range(8):
+            for j in range(8):
+                piece = ChessBoard.get_boardpiece(chessboard, (i,j))
+                if piece != None and piece.side == side:
+                    score += ChessComputer.get_score(piece.material)
+        return score
+
+    @staticmethod
+    def get_score(material):
+        score = 0
+        if material == Material.Pawn:
+            score += 10
+        elif material == Material.Rook:
+            score += 50
+        else:
+            score += 100
+        return score
+
+
 
 # This class is responsible for starting the chess game, playing and user 
 # feedback
@@ -320,7 +344,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "board.chb"
+            filename = "mate_in_one1.chb"
 
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
