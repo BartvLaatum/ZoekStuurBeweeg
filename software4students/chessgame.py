@@ -286,7 +286,28 @@ class ChessComputer:
     # TODO: write an implementation for this function
     @staticmethod
     def minimax(chessboard, depth):
+        player = chessboard.turn
+
+
+
         return (0, "no implementation written")
+
+    @staticmethod
+    def max_value(chessboard, depth):
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        if depth == 0:
+            return
+
+    @staticmethod
+    def scores(chessboard, possible_moves, depth):
+        scores = []
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            scores.append(ChessComputer.evaluate_board(new_board, depth))
+        return scores
+
+
+
 
     # This function uses alphabeta to calculate the next move. Given the
     # chessboard and max depth, this function should return a tuple of the
@@ -305,8 +326,17 @@ class ChessComputer:
     def evaluate_board(chessboard, depth_left):
         white_score = ChessComputer.count_pieces(chessboard, Side.White)
         black_score = ChessComputer.count_pieces(chessboard, Side.Black)
-        return white_score - black_score
+        weight = ChessComputer.get_weight(depth_left)
+        score =  weight * (white_score - black_score)
+        return score
 
+    # Calculate weight
+    @staticmethod
+    def get_weight(depth_left):
+        return depth_left
+
+    # Counts the pieces of a specified color, assigns a score to each piece,
+    # and returns the score
     @staticmethod
     def count_pieces(chessboard, side):
         score = 0
@@ -317,20 +347,21 @@ class ChessComputer:
                     score += ChessComputer.get_score(piece.material)
         return score
 
+    # Get the score of a specific material
     @staticmethod
     def get_score(material):
         score = 0
         if material == Material.Pawn:
-            score += 10
+            score += 1
         elif material == Material.Rook:
-            score += 50
+            score += 5
         else:
-            score += 100
+            score += 50
         return score
 
 
 
-# This class is responsible for starting the chess game, playing and user 
+# This class is responsible for starting the chess game, playing and user
 # feedback
 class ChessGame:
     def __init__(self, turn):
