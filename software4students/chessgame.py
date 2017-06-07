@@ -233,15 +233,28 @@ class ChessBoard:
         if None == piece:
             return True
 
-        elif Material.Pawn == piece.material:
-            if end[1] - start[1] != 1:
-                return True
-
-            if start[0] - end[0] != 0:
-                if self.get_boardpiece(end):
+        elif Material.Pawn == piece.material and self.turn == Side.White:
+            if end[1] - start[1] == -1:
+                if abs(start[0] - end[0]) == 1:
+                    if self.get_boardpiece(end):
+                        return False
+                    else:
+                        return True
+                if start[0] == end[0]:
                     return False
-                else:
-                    return True
+            return True
+
+        elif Material.Pawn == piece.material and self.turn == Side.Black:
+            if end[1] - start[1] == 1:
+                if abs(start[0] - end[0]) == 1:
+                    if self.get_boardpiece(end):
+                        return False
+                    else:
+                        return True
+                if start[0] == end[0]:
+                    return False
+            return True
+
 
         elif Material.Rook == piece.material:
             if start[0] - end[0] != 0:
@@ -418,7 +431,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "mate_in_one1.chb"
+            filename = "mate_in_one2.chb"
 
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
