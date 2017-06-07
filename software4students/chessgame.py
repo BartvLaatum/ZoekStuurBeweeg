@@ -166,7 +166,6 @@ class ChessBoard:
     # which players turn it is, all the moves possible for that player
     # It should return these moves as a list of move strings, e.g.
     # [c2c3, d4e5, f4f8]
-    # TODO: write an implementation for this function
     def legal_moves(self):
         move_list = []
         for x in range(8):
