@@ -179,7 +179,6 @@ class ChessBoard:
                             move_list.append(move)
         return move_list
 
-
     # Generates all possible moves from a start coordinate, without taking
     # the rules of the game into account
     def all_moves(self, coordinates):
@@ -200,9 +199,16 @@ class ChessBoard:
             return False
         if self.piece_restriction(start, end):
             return False
-        if self.path_obstructed(start, end):
-            return False
         return True
+
+    # Looks if there's a check
+    def king_check(self):
+        possible_moves = self.legal_moves()
+        for move in possible_moves:
+            new_board = self.make_move(move)
+            if new_board.is_king_dead(new_board.turn):
+                return True
+        return False
 
     # Checks whether a spot is occupied by teammate, by oppenent or a free spot
     def spot_occupied(self, start_pos, end_pos):
@@ -291,27 +297,6 @@ class ChessBoard:
                 return True
             return False
 
-    def path_obstructed(self, start, end):
-        horizontal = abs(start[0] - end[0])
-        vertical = abs(start[1] - end[1])
-        piece = self.get_boardpiece(start)
-
-        if Material.Pawn == piece.material:
-            return False
-
-        if Material.King == piece.material:
-            return False
-
-        else:
-            if horizontal and vertical:
-                return self.check_diagonal(start, end)
-            elif horizontal:
-                return self.check_horizontal(start, end)
-            else:
-                return self.check_vertical(start, end)
-
-
-
 # This static class is responsible for providing functions that can calculate
 # the optimal move using minimax
 class ChessComputer:
@@ -337,6 +322,7 @@ class ChessComputer:
     # of a specific board configuration after the max depth is reached
     @staticmethod
     def minimax(chessboard, depth):
+        depth += 1
         possible_moves = ChessBoard.legal_moves(chessboard)
         best_move = possible_moves[0]
         if chessboard.turn == Side.Black:
@@ -357,6 +343,7 @@ class ChessComputer:
                     best_score = score
         return best_score, best_move
 
+    # Help function of the minimax algorithm
     @staticmethod
     def min_value(chessboard, depth):
         depth -= 1
@@ -374,6 +361,7 @@ class ChessComputer:
                 best = value
         return best
 
+    # Help function of the minimax algorithm
     @staticmethod
     def max_value(chessboard, depth):
         depth -= 1
@@ -391,8 +379,9 @@ class ChessComputer:
                 best = value
         return best
 
+    # The alpha beta version of min_value
     @staticmethod
-    def min_value2(chessboard, depth, alpha, beta):
+    def min_value_ab(chessboard, depth, alpha, beta):
         depth -= 1
         if ChessBoard.is_king_dead(chessboard, chessboard.turn):
             return ChessComputer.evaluate_board(chessboard, depth)
@@ -400,17 +389,20 @@ class ChessComputer:
         if depth == 1:
             scores = ChessComputer.scores(chessboard, possible_moves, depth)
             return min(scores)
-        value = 9999999
+        best = 9999999
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
-            value = ChessComputer.max_value2(new_board, depth, alpha, beta)
-            if value >= alpha:
+            value = ChessComputer.max_value_ab(new_board, depth, alpha, beta)
+            if value < best:
+                best = value
+            if value <= alpha:
                 return value
-            beta = max(beta, value)
-        return value
+            beta = min([beta, value])
+        return best
 
+    # The alpha beta version of max_value
     @staticmethod
-    def max_value2(chessboard, depth, alpha, beta):
+    def max_value_ab(chessboard, depth, alpha, beta):
         depth -= 1
         if ChessBoard.is_king_dead(chessboard, chessboard.turn):
             return ChessComputer.evaluate_board(chessboard, depth)
@@ -418,16 +410,18 @@ class ChessComputer:
         if depth == 1:
             scores = ChessComputer.scores(chessboard, possible_moves, depth)
             return min(scores)
-        value = -9999999
+        best = -9999999
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
-            value = ChessComputer.min_value2(new_board, depth, alpha, beta)
-            if value <= beta:
+            value = ChessComputer.min_value_ab(new_board, depth, alpha, beta)
+            if value > best:
+                best = value
+            if value >= beta:
                 return value
-            alpha = min(alpha, value)
-        return value
+            alpha = max([alpha, value])
+        return best
 
-
+    # Calculates the score of a board after a move, for all possible moves.
     @staticmethod
     def scores(chessboard, possible_moves, depth):
         scores = []
@@ -436,30 +430,30 @@ class ChessComputer:
             scores.append(ChessComputer.evaluate_board(new_board, depth))
         return scores
 
-
     # This function uses alphabeta to calculate the next move. Given the
     # chessboard and max depth, this function should return a tuple of the
     # the score and the move that should be executed.
     # It has alpha and beta as extra pruning parameters
     @staticmethod
     def alphabeta(chessboard, depth, alpha, beta):
+        depth += 1
         possible_moves = ChessBoard.legal_moves(chessboard)
-        alpha = -999999
-        beta = 999999
         best_move = possible_moves[0]
         if chessboard.turn == Side.Black:
             best_score = 9999999
         else:
             best_score = -9999999
+        alpha = -9999999
+        beta = 9999999
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
             if chessboard.turn == Side.Black:
-                score = ChessComputer.max_value2(new_board, depth, beta, alpha)
+                score = ChessComputer.max_value_ab(new_board, depth, alpha, beta)
                 if score < best_score:
                     best_move = move
                     best_score = score
             else:
-                score = ChessComputer.min_value2(new_board, depth, alpha, beta)
+                score = ChessComputer.min_value_ab(new_board, depth, alpha, beta)
                 if score > best_score:
                     best_move = move
                     best_score = score
@@ -521,7 +515,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "test_board.chb"
+            filename = "capture_king1.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
@@ -550,6 +544,7 @@ class ChessGame:
 
     def make_computer_move(self):
         print("Calculating best move...")
+        print(ChessBoard.king_check(self.chessboard))
         return ChessComputer.computer_move(self.chessboard,
                 self.depth, alphabeta=True)
         
