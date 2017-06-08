@@ -31,6 +31,8 @@ def to_move(from_coord, to_coord):
 # - Material.Rook
 # - Material.King
 # - Material.Pawn
+# - Material.Queen
+# - Material.Bishop
 # - Side.White
 # - Side.Black
 class Material:
@@ -175,8 +177,9 @@ class ChessBoard:
         return possible_moves
 
     # This function should return, given the current board configuation and
+    # This function returns, given the current board configuation and
     # which players turn it is, all the moves possible for that player
-    # It should return these moves as a list of move strings, e.g.
+    # It returns these moves as a list of move strings, e.g.
     # [c2c3, d4e5, f4f8]
     def legal_moves(self):
         move_list = []
@@ -199,7 +202,7 @@ class ChessBoard:
                 moves.append(to_move(coordinates,(i,j)))
         return moves
 
-    # This function should return, given the move specified (in the format
+    # This function returns, given the move specified (in the format
     # 'd2d3') whether this move is legal
     def is_legal_move(self, move):
         start = to_coordinate(move[:2])
@@ -229,7 +232,8 @@ class ChessBoard:
                 return False
         return True
 
-    # Checks whether a spot is occupied by teammate, by oppenent or a free spot
+    # Checks whether a spot is occupied by a teammate or
+    # if it's a free spot to go
     def spot_occupied(self, start_pos, end_pos):
         piece = self.get_boardpiece(start_pos)
         piece_end = self.get_boardpiece(end_pos)
@@ -304,7 +308,7 @@ class ChessBoard:
             horizontal = start[0] - end[0]
             vertical = start[1] - end[1]
             if horizontal != 0 and vertical != 0:
-                if horizontal != vertical:
+                if horizontal == vertical:
                     return False
             return True
 
@@ -316,6 +320,64 @@ class ChessBoard:
                 return True
             return False
 
+    # checks whether there stands another chesspiece
+    # between start and end position
+    def path_obstructed(self, start, end):
+        horizontal = abs(start[0] - end[0])
+        vertical = abs(start[1] - end[1])
+        piece = self.get_boardpiece(start)
+
+        if Material.Pawn == piece.material:
+            return False
+
+        if Material.King == piece.material:
+            return False
+
+        else:
+            if horizontal == vertical:
+                return self.check_diagonal(start, end)
+            elif horizontal:
+                return self.check_horizontal(start, end)
+            else:
+                return self.check_vertical(start, end)
+
+    # the check_functions in three different directions
+    def check_horizontal(self, start, end):
+        move_num = start[0] - end[0]
+        if move_num < 0:
+            for i in range(1, abs(move_num)):
+                if self.get_boardpiece((start[0]+i, start[1])) is not None:
+                    return True
+        else:
+            for i in range(-move_num+1, 0):
+                if self.get_boardpiece((start[0]+i, start[1])) is not None:
+                    return True
+        return False
+
+    def check_vertical(self, start, end):
+        move_num = start[1] - end[1]
+        if move_num < 0:
+            for i in range(1, abs(move_num)):
+                if self.get_boardpiece((start[0], start[1] + i)) is not None:
+                    return True
+        else:
+            for i in range(-move_num + 1, 0):
+                if self.get_boardpiece((start[0], start[1] + i)) is not None:
+                    return True
+        return False
+
+    def check_diagonal(self, start, end):
+        move_num = start[0] - end[0]
+        if move_num < 0:
+            for i in range(1, abs(move_num)):
+                if self.get_boardpiece((start[0] + i, start[1] + i)) is not None:
+                    return True
+        else:
+            for i in range(-move_num + 1, 0):
+                if self.get_boardpiece((start[0] +i, start[1] + i)) is not None:
+                    return True
+        return False
+
 # This static class is responsible for providing functions that can calculate
 # the optimal move using minimax
 class ChessComputer:
@@ -324,7 +386,7 @@ class ChessComputer:
     # possible. The input needed is a chessboard configuration and the max
     # depth of the search algorithm. It returns a tuple of (score, chessboard)
     # with score the maximum score attainable and chessboardmove that is needed
-    #to achieve this score.
+    # to achieve this score.
     @staticmethod
     def computer_move(chessboard, depth, alphabeta=False):
         if alphabeta:
@@ -335,10 +397,8 @@ class ChessComputer:
             return ChessComputer.minimax(chessboard, depth)
 
     # This function uses minimax to calculate the next move. Given the current
-    # chessboard and max depth, this function should return a tuple of the
+    # chessboard and max depth, this function returns a tuple of the
     # the score and the move that should be executed
-    # NOTE: use ChessComputer.evaluate_board() to calculate the score
-    # of a specific board configuration after the max depth is reached
     @staticmethod
     def minimax(chessboard, depth):
         depth += 1
