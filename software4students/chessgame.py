@@ -163,6 +163,17 @@ class ChessBoard:
                     seen_king = True
         return not seen_king
 
+    def possible_moves(self):
+        legal_moves = self.legal_moves()
+        possible_moves = []
+        for move in legal_moves:
+            new_board = self.make_move(move)
+            if new_board.stale_mate():
+                continue
+            else:
+                possible_moves.append(move)
+        return possible_moves
+
     # This function should return, given the current board configuation and
     # which players turn it is, all the moves possible for that player
     # It should return these moves as a list of move strings, e.g.
@@ -209,6 +220,14 @@ class ChessBoard:
             if new_board.is_king_dead(new_board.turn):
                 return True
         return False
+
+    def stale_mate(self):
+        possible_moves = self.legal_moves()
+        for move in possible_moves:
+            new_board = self.make_move(move)
+            if not new_board.king_check():
+                return False
+        return True
 
     # Checks whether a spot is occupied by teammate, by oppenent or a free spot
     def spot_occupied(self, start_pos, end_pos):
@@ -515,7 +534,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "capture_king1.chb"
+            filename = "test_board.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
@@ -544,10 +563,8 @@ class ChessGame:
 
     def make_computer_move(self):
         print("Calculating best move...")
-        print(ChessBoard.king_check(self.chessboard))
         return ChessComputer.computer_move(self.chessboard,
                 self.depth, alphabeta=True)
-        
 
     def make_human_move(self):
         # Endlessly request input until the right input is specified
