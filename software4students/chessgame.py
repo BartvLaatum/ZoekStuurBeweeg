@@ -350,6 +350,42 @@ class ChessComputer:
                 best = value
         return best
 
+    @staticmethod
+    def min_value2(chessboard, depth, alpha, beta):
+        depth -= 1
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        if depth == 1:
+            scores = ChessComputer.scores(chessboard, possible_moves, depth)
+            return min(scores)
+        value = 9999999
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            value = ChessComputer.max_value2(new_board, depth, alpha, beta)
+            if value >= alpha:
+                return value
+            beta = max(beta, value)
+        return value
+
+    @staticmethod
+    def max_value2(chessboard, depth, alpha, beta):
+        depth -= 1
+        if ChessBoard.is_king_dead(chessboard, chessboard.turn):
+            return ChessComputer.evaluate_board(chessboard, depth)
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        if depth == 1:
+            scores = ChessComputer.scores(chessboard, possible_moves, depth)
+            return min(scores)
+        value = -9999999
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            value = ChessComputer.min_value2(new_board, depth, alpha, beta)
+            if value <= beta:
+                return value
+            alpha = min(alpha, value)
+        return value
+
 
     @staticmethod
     def scores(chessboard, possible_moves, depth):
@@ -360,20 +396,33 @@ class ChessComputer:
         return scores
 
 
-
-
     # This function uses alphabeta to calculate the next move. Given the
     # chessboard and max depth, this function should return a tuple of the
     # the score and the move that should be executed.
     # It has alpha and beta as extra pruning parameters
-    # NOTE: use ChessComputer.evaluate_board() to calculate the score
-    # of a specific board configuration after the max depth is reached
     @staticmethod
     def alphabeta(chessboard, depth, alpha, beta):
-        return ChessComputer.minimax(chessboard, depth)
-        return (0, "no implementation written")
-
-
+        possible_moves = ChessBoard.legal_moves(chessboard)
+        alpha = -999999
+        beta = 999999
+        best_move = possible_moves[0]
+        if chessboard.turn == Side.Black:
+            best_score = 9999999
+        else:
+            best_score = -9999999
+        for move in possible_moves:
+            new_board = ChessBoard.make_move(chessboard, move)
+            if chessboard.turn == Side.Black:
+                score = ChessComputer.max_value2(new_board, depth, beta, alpha)
+                if score < best_score:
+                    best_move = move
+                    best_score = score
+            else:
+                score = ChessComputer.min_value2(new_board, depth, alpha, beta)
+                if score > best_score:
+                    best_move = move
+                    best_score = score
+        return best_score, best_move
 
     # Calculates the score of a given board configuration based on the
     # material left on the board. Returns a score number, in which positive
@@ -494,5 +543,3 @@ class ChessGame:
 
 chess_game = ChessGame(Side.White)
 chess_game.main()
-
-
