@@ -34,7 +34,7 @@ def to_move(from_coord, to_coord):
 # - Side.White
 # - Side.Black
 class Material:
-    Rook, King, Pawn = ['r','k','p']
+    Rook, King, Pawn, Queen, Bishop = ['r','k','p','q','b']
 class Side:
     White, Black = range(0,2)
 
@@ -49,14 +49,14 @@ class Piece:
 # A chess configuration is specified by whose turn it is and a 2d array
 # with all the pieces on the board
 class ChessBoard:
-    
+
     def __init__(self, turn):
         # This variable is either equal to Side.White or Side.Black
         self.turn = turn
         self.board_matrix = None
 
 
-    ## Getter and setter methods 
+    ## Getter and setter methods
     def set_board_matrix(self,board_matrix):
         self.board_matrix = board_matrix
 
@@ -69,7 +69,7 @@ class ChessBoard:
     def set_boardpiece(self,position,piece):
         (x,y) = position
         self.board_matrix[y][x] = piece
-    
+
     # Read in the board_matrix using an input string
     def load_from_input(self,input_str):
         self.board_matrix = [[None for _ in range(8)] for _ in range(8)]
@@ -90,8 +90,8 @@ class ChessBoard:
             if char == '\n':
                 x = 0
                 y += 1
-                continue 
-            
+                continue
+
             if char.isupper():
                 side = Side.White
             else:
@@ -109,7 +109,7 @@ class ChessBoard:
         return_str += "   abcdefgh\n\n"
         y = 8
         for board_row in self.board_matrix:
-            return_str += str(y) + "  " 
+            return_str += str(y) + "  "
             for piece in board_row:
                 if piece == None:
                     return_str += "."
@@ -120,8 +120,8 @@ class ChessBoard:
                     return_str += char
             return_str += '\n'
             y -= 1
-        
-        turn_name = ("White" if self.turn == Side.White else "Black") 
+
+        turn_name = ("White" if self.turn == Side.White else "Black")
         return_str += "It is " + turn_name + "'s turn\n"
 
         return return_str
@@ -130,7 +130,7 @@ class ChessBoard:
     # with the new board situation
     # Note: this method assumes the move suggested is a valid, legal move
     def make_move(self, move_str):
-        
+
         start_pos = to_coordinate(move_str[0:2])
         end_pos = to_coordinate(move_str[2:4])
 
@@ -138,10 +138,10 @@ class ChessBoard:
             turn = Side.Black
         else:
             turn = Side.White
-            
+
         # Duplicate the current board_matrix
         new_matrix = [row[:] for row in self.board_matrix]
-        
+
         # Create a new chessboard object
         new_board = ChessBoard(turn)
         new_board.set_board_matrix(new_matrix)
@@ -162,7 +162,7 @@ class ChessBoard:
                         piece.material == Material.King:
                     seen_king = True
         return not seen_king
-    
+
     # This function should return, given the current board configuation and
     # which players turn it is, all the moves possible for that player
     # It should return these moves as a list of move strings, e.g.
@@ -199,6 +199,8 @@ class ChessBoard:
         if self.spot_occupied(start, end):
             return False
         if self.piece_restriction(start, end):
+            return False
+        if self.path_obstructed(start, end):
             return False
         return True
 
@@ -265,12 +267,49 @@ class ChessBoard:
                     return True
             return False
 
+        elif Material.Queen == piece.material:
+            horizontal = start[0] - end[0]
+            vertical = start[1] - end[1]
+            if horizontal != 0 and vertical != 0:
+                if horizontal != vertical:
+                    return True
+            return False
+
+        elif Material.Bishop == piece.material:
+            horizontal = start[0] - end[0]
+            vertical = start[1] - end[1]
+            if horizontal != 0 and vertical != 0:
+                if horizontal != vertical:
+                    return False
+            return True
+
+        # King
         else:
             if abs(start[0] - end[0]) > 1:
                 return True
             if abs(start[1] - end[1]) > 1:
                 return True
             return False
+
+    def path_obstructed(self, start, end):
+        horizontal = abs(start[0] - end[0])
+        vertical = abs(start[1] - end[1])
+        piece = self.get_boardpiece(start)
+
+        if Material.Pawn == piece.material:
+            return False
+
+        if Material.King == piece.material:
+            return False
+
+        else:
+            if horizontal and vertical:
+                return self.check_diagonal(start, end)
+            elif horizontal:
+                return self.check_horizontal(start, end)
+            else:
+                return self.check_vertical(start, end)
+
 
 
 # This static class is responsible for providing functions that can calculate
@@ -291,7 +330,6 @@ class ChessComputer:
         else:
             return ChessComputer.minimax(chessboard, depth)
 
-
     # This function uses minimax to calculate the next move. Given the current
     # chessboard and max depth, this function should return a tuple of the
     # the score and the move that should be executed
@@ -301,7 +339,10 @@ class ChessComputer:
     def minimax(chessboard, depth):
         possible_moves = ChessBoard.legal_moves(chessboard)
         best_move = possible_moves[0]
-        best_score = 0
+        if chessboard.turn == Side.Black:
+            best_score = 9999999
+        else:
+            best_score = -9999999
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
             if chessboard.turn == Side.Black:
@@ -461,7 +502,7 @@ class ChessComputer:
         elif material == Material.Rook:
             score += 5
         else:
-            score += 50
+            score += 100
         return score
 
 
@@ -470,7 +511,7 @@ class ChessComputer:
 # feedback
 class ChessGame:
     def __init__(self, turn):
-     
+
         # NOTE: you can make this depth higher once you have implemented
         # alpha-beta, which is more efficient
         self.depth = 4
@@ -480,8 +521,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "mate_in_one2.chb"
-
+            filename = "test_board.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
