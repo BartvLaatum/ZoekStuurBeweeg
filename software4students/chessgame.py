@@ -215,6 +215,8 @@ class ChessBoard:
 
     # Looks if there's a stale mate
     def stale_mate(self):
+        if self.is_king_dead(self.turn):
+            return False
         possible_moves = self.legal_moves()
         for move in possible_moves:
             new_board = self.make_move(move)
@@ -589,7 +591,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "capture_king1.chb"
+            filename = "test_board.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
