@@ -202,6 +202,8 @@ class ChessBoard:
             return False
         if self.piece_restriction(start, end):
             return False
+        if self.path_obstructed(start, end):
+            return False
         return True
 
     # Looks if there's a check
@@ -211,6 +213,29 @@ class ChessBoard:
             new_board = self.make_move(move)
             if new_board.is_king_dead(new_board.turn):
                 return True
+        return False
+
+    def check_kings_only(self):
+        counter = 0
+        for i in range(8):
+            for j in range(8):
+                piece = self.get_boardpiece((i,j))
+                if piece != Material.King and not None:
+                    print('nee')
+                    return False
+                elif piece == Material.King:
+                    print('dus')
+                    counter += 1
+        if counter == 2:
+            print('ja')
+            return True
+        return False
+
+    def stale_mate(self):
+        if self.checks_kings_only():
+            return True
+        if same_score():
+            return True
         return False
 
     # Looks if there's a stale mate
@@ -518,14 +543,12 @@ class ChessComputer:
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
             if chessboard.turn == Side.Black:
-                score = ChessComputer.max_value_ab(new_board, depth,
-                                                   alpha, beta)
+                score = ChessComputer.max_value_ab(new_board, depth, alpha, beta)
                 if score < best_score:
                     best_move = move
                     best_score = score
             else:
-                score = ChessComputer.min_value_ab(new_board, depth,
-                                                   alpha, beta)
+                score = ChessComputer.min_value_ab(new_board, depth, alpha, beta)
                 if score > best_score:
                     best_move = move
                     best_score = score
@@ -589,7 +612,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "capture_king1.chb"
+            filename = "test_board.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
@@ -632,14 +655,20 @@ class ChessGame:
                 print("Exiting program...")
                 sys.exit(0)
             elif self.chessboard.is_legal_move(move):
-                if ChessBoard.stale_mate(self.chessboard.make_move(move)):
-                    print("That would be a stale mate...")
-                    continue
-                else:
-                    break
+                break
             print("Incorrect move!")
+                #if ChessBoard.stale_mate(self.chessboard.make_move(move)):
+                 #   print("That would be a stale mate...")
+                  #  continue
+                #else:
+
 
         self.chessboard = self.chessboard.make_move(move)
+
+        if ChessBoard.check_kings_only(self.chessboard):
+            print(self.chessboard)
+            print("It's a stale mate!")
+            sys.exit(0)
 
         # Exit the game if one of the kings is dead
         if self.chessboard.is_king_dead(Side.Black):
