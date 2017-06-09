@@ -240,6 +240,8 @@ class ChessBoard:
 
     # Looks if there's a stale mate
     def stale_mate(self):
+        if self.is_king_dead(self.turn):
+            return False
         possible_moves = self.legal_moves()
         for move in possible_moves:
             new_board = self.make_move(move)
