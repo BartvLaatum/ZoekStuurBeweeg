@@ -213,6 +213,7 @@ class ChessBoard:
                 return True
         return False
 
+    # Looks if there's a stale mate
     def stale_mate(self):
         possible_moves = self.legal_moves()
         for move in possible_moves:
@@ -274,7 +275,6 @@ class ChessBoard:
                 if start[0] == end[0]:
                     return False
             return True
-
 
         elif Material.Rook == piece.material:
             if start[0] - end[0] != 0:
@@ -359,11 +359,13 @@ class ChessBoard:
         move_num = start[0] - end[0]
         if move_num < 0:
             for i in range(1, abs(move_num)):
-                if self.get_boardpiece((start[0] + i, start[1] + i)) is not None:
+                if self.get_boardpiece((start[0] + i,
+                                        start[1] + i)) is not None:
                     return True
         else:
             for i in range(-move_num + 1, 0):
-                if self.get_boardpiece((start[0] +i, start[1] + i)) is not None:
+                if self.get_boardpiece((start[0] +i,
+                                        start[1] + i)) is not None:
                     return True
         return False
 
@@ -516,12 +518,14 @@ class ChessComputer:
         for move in possible_moves:
             new_board = ChessBoard.make_move(chessboard, move)
             if chessboard.turn == Side.Black:
-                score = ChessComputer.max_value_ab(new_board, depth, alpha, beta)
+                score = ChessComputer.max_value_ab(new_board, depth,
+                                                   alpha, beta)
                 if score < best_score:
                     best_move = move
                     best_score = score
             else:
-                score = ChessComputer.min_value_ab(new_board, depth, alpha, beta)
+                score = ChessComputer.min_value_ab(new_board, depth,
+                                                   alpha, beta)
                 if score > best_score:
                     best_move = move
                     best_score = score
@@ -585,7 +589,7 @@ class ChessGame:
         if len(sys.argv) > 1:
             filename = sys.argv[1]
         else:
-            filename = "test_board.chb"
+            filename = "capture_king1.chb"
         print("Reading from " + filename + "...")
         self.load_from_file(filename)
 
@@ -611,7 +615,6 @@ class ChessGame:
             print("")
             self.make_human_move()
 
-
     def make_computer_move(self):
         print("Calculating best move...")
         return ChessComputer.computer_move(self.chessboard,
@@ -629,7 +632,11 @@ class ChessGame:
                 print("Exiting program...")
                 sys.exit(0)
             elif self.chessboard.is_legal_move(move):
-                break
+                if ChessBoard.stale_mate(self.chessboard.make_move(move)):
+                    print("That would be a stale mate...")
+                    continue
+                else:
+                    break
             print("Incorrect move!")
 
         self.chessboard = self.chessboard.make_move(move)
