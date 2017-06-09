@@ -165,17 +165,6 @@ class ChessBoard:
                     seen_king = True
         return not seen_king
 
-    def possible_moves(self):
-        legal_moves = self.legal_moves()
-        possible_moves = []
-        for move in legal_moves:
-            new_board = self.make_move(move)
-            if new_board.stale_mate():
-                continue
-            else:
-                possible_moves.append(move)
-        return possible_moves
-
     # This function should return, given the current board configuation and
     # This function returns, given the current board configuation and
     # which players turn it is, all the moves possible for that player
@@ -573,12 +562,14 @@ class ChessComputer:
         if material == Material.Pawn:
             score += 1
         elif material == Material.Rook:
-            score += 5
+            score += 10
+        elif material == Material.Bishop:
+            score += 10
+        elif material == Material.Queen:
+            score += 50
         else:
-            score += 100
+            score += 150
         return score
-
-
 
 # This class is responsible for starting the chess game, playing and user
 # feedback
